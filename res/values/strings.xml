@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Mower</string>
+    <string name="action_exit">Exit</string>
+    <string name="dlg_loading_title">Loading Mowers</string>
+    <string name="dlg_loading_msg">Please wait&#8230;</string>
+    <string name="dialog_mode_title">Please choose mode</string>
+    <string-array name="mode_arrays">
+        <item>Console Mode</item>
+        <item>Graphic Mode</item>
+    </string-array>
+
+</resources>
