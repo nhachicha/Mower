@@ -28,7 +28,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.widget.Toast;
 import dev.nhachicha.demo.MowerApplication;
 import dev.nhachicha.demo.R;
 import dev.nhachicha.demo.entity.Mower;
@@ -43,6 +42,7 @@ public class Misc {
 public static void loadConfig (final Context ctx, final Handler handler) {
 		new AsyncTask<Void, Void, Void>() {
 			ProgressDialog progress;
+			
 			@Override
 			protected void onPreExecute() {
 				progress = ProgressDialog.show(ctx,
@@ -52,9 +52,7 @@ public static void loadConfig (final Context ctx, final Handler handler) {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				try {//TODO maybe we could move this to an asynTask
-					 
-					
+				try {
 					MowerApplication.MOWERS =  new ArrayList<Mower>();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(ctx.getAssets().open(Constants.GAME_CONF_FILE)));
 					
@@ -91,9 +89,14 @@ public static void loadConfig (final Context ctx, final Handler handler) {
 								tmp = initialPosition.split(" ");
 								initPosX = Integer.parseInt(tmp[0]);
 								initPosY = Integer.parseInt(tmp[1]);
-								mower = new Mower(initPosX,initPosY, tmp[2], movement);
-								
-								MowerApplication.MOWERS.add(mower);
+								// init position should be within range
+								if (initPosX>=0 && initPosX<MowerApplication.MATRIX_WIDTH && initPosY>=0 && initPosY <MowerApplication.MATRIX_HEIGHT) {
+									mower = new Mower(initPosX,initPosY, tmp[2], movement);
+									MowerApplication.MOWERS.add(mower);
+
+								} else {
+									throw new IllegalArgumentException("Malformed configuration file. init position outside range");
+								}
 								
 							} else {
 								throw new IllegalArgumentException("Malformed configuration file. mouvements are wrong");
@@ -105,36 +108,16 @@ public static void loadConfig (final Context ctx, final Handler handler) {
 					}
 					
 				} catch (IOException e) {
-					Toast.makeText(ctx, "Fatal Error Can't load configuration file from assets", Toast.LENGTH_LONG).show();
-					handler.postDelayed(new Runnable() {
-						
-						@Override
-						public void run() {
-							exit(ctx);
-						}
-					}, 2000);//Delay the exit so we give the user a chance to read the error message
-					
+					e.printStackTrace();
+					exit(ctx);
 					
 				} catch (NumberFormatException e) {
-					Toast.makeText(ctx, "Fatal Error Can't load configuration file from assets", Toast.LENGTH_LONG).show();
-					handler.postDelayed(new Runnable() {
-						
-						@Override
-						public void run() {
-							exit(ctx);
-						}
-					}, 2000);
+					e.printStackTrace();
+					exit(ctx);
 					
 				} catch (IllegalArgumentException e) {
-					Toast.makeText(ctx, "Fatal Error Can't load configuration file from assets", Toast.LENGTH_LONG).show();
-					handler.postDelayed(new Runnable() {
-						
-						@Override
-						public void run() {
-							exit(ctx);
-						}
-					}, 2000);
-				    
+					e.printStackTrace();
+					exit(ctx);
 				}
 				return null;
 			}
@@ -143,13 +126,7 @@ public static void loadConfig (final Context ctx, final Handler handler) {
 			protected void onPostExecute(Void result) {
 				progress.dismiss();
 			}
-
-			
-			
 		}.execute();
-		
-
-		  
 	}
 
 	public static void exit(Context ctx) {
